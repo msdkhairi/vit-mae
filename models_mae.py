@@ -148,6 +148,9 @@ class MaskedAutoencoderViT(nn.Module):
         return x_masked, mask, ids_restore
 
     def forward_encoder(self, x, mask_ratio):
+
+        if mask_ratio == 0:
+            return self.forward_encoder_no_mask(x, mask_ratio)
         # embed patches
         x = self.patch_embed(x)
 
@@ -237,8 +240,8 @@ class MaskedAutoencoderViT(nn.Module):
         return loss
 
     def forward(self, imgs, mask_ratio=0.75):
-        # latent, mask, ids_restore = self.forward_encoder(imgs, mask_ratio)
-        latent, mask, ids_restore = self.forward_encoder_no_mask(imgs, mask_ratio)
+        latent, mask, ids_restore = self.forward_encoder(imgs, mask_ratio)
+        # latent, mask, ids_restore = self.forward_encoder_no_mask(imgs, mask_ratio)
         pred = self.forward_decoder(latent, ids_restore)  # [N, L, p*p*3]
         loss = self.forward_loss(imgs, pred, mask)
         return loss, pred, mask
